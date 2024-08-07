@@ -17,18 +17,18 @@ export interface BodyLineProps<RecordType = any> {
 
   /** Render cell only when it has `rowSpan > 1` */
   extra?: boolean;
+  offsetX?: number;
   getHeight?: (rowSpan: number) => number;
 }
 
 const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) => {
-  const { data, index, className, rowKey, style, extra, getHeight, ...restProps } = props;
+  const { data, index, className, rowKey, style, extra, getHeight, offsetX, ...restProps } = props;
   const { record, indent, index: renderIndex } = data;
 
   const { scrollX, flattenColumns, prefixCls, fixColumn, componentWidth } = useContext(
     TableContext,
     ['prefixCls', 'flattenColumns', 'fixColumn', 'componentWidth', 'scrollX'],
   );
-  console.log("🚀 ~ BodyLine ~ scrollX: flattenColumns: componentWidth: ", scrollX, flattenColumns, componentWidth)
   const { getComponent } = useContext(StaticContext, ['getComponent']);
 
   const rowInfo = useRowInfo(record, rowKey, index, indent);
@@ -55,7 +55,6 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
 
     const rowCellCls = `${prefixCls}-expanded-row-cell`;
 
-    console.log("🚀 ~ prefixCls:", prefixCls)
     expandRowNode = (
       <RowComponent
         className={classNames(
@@ -89,7 +88,19 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
     rowStyle.pointerEvents = 'none';
   }
 
-  console.log("🚀 ~ {flattenColumns.slice ~ flattenColumns:", flattenColumns)
+  const columnWidthList: number[] = React.useMemo(() => {
+    let curColumnTotal = 0;
+    return flattenColumns.reduce((acc, column) => {
+      curColumnTotal += (column.width || 0 ) as number;
+      acc.push(curColumnTotal);
+
+      return acc;
+    }, [])
+  }, [flattenColumns]);
+
+  var leftIndex = columnWidthList.findIndex(width => width >= offsetX);
+  var rightIndex = columnWidthList.findIndex(width => width >= (offsetX || 0)  + componentWidth) + 1;
+  leftIndex = leftIndex >= 0 ? leftIndex : 0;
   const rowNode = (
     <RowComponent
       {...rowProps}
@@ -101,14 +112,14 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
       })}
       style={{ ...rowStyle, ...rowProps?.style }}
     >
-      {flattenColumns.slice(window.sliceCount1 || 0, window.sliceCount2).map((column, colIndex) => {
+      {flattenColumns.slice(leftIndex, rightIndex).map((column, colIndex) => {
         return (
           <VirtualCell
-            key={colIndex + (window.sliceCount1 || 0)}
+            key={colIndex + leftIndex}
             component={cellComponent}
             rowInfo={rowInfo}
             column={column}
-            colIndex={colIndex + (window.sliceCount1 || 0)}
+            colIndex={colIndex + leftIndex}
             indent={indent}
             index={index}
             renderIndex={renderIndex}

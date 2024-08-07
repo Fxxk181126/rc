@@ -28,7 +28,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
     expandedKeys,
     prefixCls,
     childrenColumnName,
-    scrollX,
+    scrollX
   } = useContext(TableContext, [
     'flattenColumns',
     'onColumnResize',
@@ -36,7 +36,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
     'prefixCls',
     'expandedKeys',
     'childrenColumnName',
-    'scrollX',
+    'scrollX'
   ]);
   const {
     sticky,
@@ -44,6 +44,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
     listItemHeight,
     getComponent,
     onScroll: onTablePropScroll,
+    onScrollX
   } = useContext(StaticContext);
 
   // =========================== Ref ============================
@@ -106,8 +107,17 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
     return 1;
   };
 
+  const columnWidthList = React.useMemo(() => {
+    let curTotalWidth = 0;
+    return flattenColumns.reduce(function (acc, column, index) {
+      curTotalWidth += (column.width || 0) as number;
+      acc.push(curTotalWidth);
+
+      return acc;
+    }, []);
+  }, [flattenColumns]);
   const extraRender: ListProps<any>['extraRender'] = info => {
-    const { start, end, getSize, offsetY } = info;
+    const { start, end, getSize, offsetY, offsetX } = info;
 
     // Do nothing if no data
     if (end < 0) {
@@ -177,7 +187,8 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
       };
 
       const sizeInfo = getSize(rowKey);
-
+      let leftIndex = columnWidthList.findIndex(width => width >= offsetX) - 1;
+      console.log("🚀 ~ Grid ~ leftIndex:222", index, leftIndex, offsetX, columnWidthList[leftIndex])
       return (
         <BodyLine
           key={index}
@@ -186,6 +197,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
           index={index}
           style={{
             top: -offsetY + sizeInfo.top,
+            // left: -(leftIndex >= 0 ? columnWidthList[leftIndex] : 0)
           }}
           extra
           getHeight={getHeight}
@@ -237,11 +249,13 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
           });
         }}
         onScroll={onTablePropScroll}
+        onScrollX={onScrollX}
+        columnWidthList={columnWidthList}
         extraRender={extraRender}
       >
         {(item, index, itemProps) => {
           const rowKey = getRowKey(item.record, index);
-          return <BodyLine data={item} rowKey={rowKey} index={index} style={itemProps.style} />;
+          return <BodyLine data={item} rowKey={rowKey} index={index} style={itemProps.style} offsetX={itemProps.offsetX}/>;
         }}
       </VirtualList>
     </GridContext.Provider>

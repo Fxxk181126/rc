@@ -23,6 +23,8 @@ interface FillerProps {
   rtl: boolean;
 
   extra?: React.ReactNode;
+
+  columnWidthList?: number[];
 }
 
 /**
@@ -40,6 +42,7 @@ const Filler = React.forwardRef(
       innerProps,
       rtl,
       extra,
+      columnWidthList = []
     }: FillerProps,
     ref: React.Ref<HTMLDivElement>,
   ) => {
@@ -50,6 +53,7 @@ const Filler = React.forwardRef(
       flexDirection: 'column',
     };
 
+    let leftIndex = columnWidthList.findIndex(width => width >= offsetX) - 1;
     if (offsetY !== undefined) {
       // Not set `width` since this will break `sticky: right`
       outerStyle = {
@@ -60,8 +64,8 @@ const Filler = React.forwardRef(
 
       innerStyle = {
         ...innerStyle,
-        transform: `translateY(${offsetY}px)`,
-        [rtl ? 'marginRight' : 'marginLeft']: -offsetX, // 需要增加前面删除的列宽
+        transform: `translate(${-offsetX + (leftIndex >= 0 ? columnWidthList[leftIndex] : 0)}px, ${offsetY}px)`,// 需要增加前面删除的列宽
+        // [rtl ? 'marginRight' : 'marginLeft']: -offsetX, 
         position: 'absolute',
         left: 0,
         right: 0,

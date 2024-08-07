@@ -7,6 +7,7 @@ export interface StaticContextProps {
   sticky: boolean | TableSticky;
   getComponent: GetComponent;
   onScroll?: React.UIEventHandler<HTMLDivElement>;
+  onScrollX?: React.UIEventHandler<HTMLDivElement>;
 }
 
 export const StaticContext = createContext<StaticContextProps>(null);

@@ -168,6 +168,7 @@ export interface TableProps<RecordType = any>
   internalRefs?: {
     body: React.MutableRefObject<HTMLDivElement>;
   };
+  virtualScrollX?: number;
 }
 
 function defaultEmpty() {

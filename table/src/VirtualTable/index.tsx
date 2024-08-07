@@ -61,12 +61,19 @@ function VirtualTable<RecordType>(props: VirtualTableProps<RecordType>, ref: Rea
     (path, defaultComponent) => getValue(components, path) || defaultComponent,
   );
 
+  const [virtualScrollX, setVirtualScrollX] = React.useState();
+
+  function onScrollX(n) {
+    setVirtualScrollX(n);
+  }
+
   // Memo this
   const onInternalScroll = useEvent(onScroll);
+  const onInternalScrollX = useEvent(onScrollX);
 
   // ========================= Context ==========================
   const context = React.useMemo(
-    () => ({ sticky, scrollY, listItemHeight, getComponent, onScroll: onInternalScroll }),
+    () => ({ sticky, scrollY, listItemHeight, getComponent, onScroll: onInternalScroll, onScrollX: onInternalScrollX }),
     [sticky, scrollY, listItemHeight, getComponent, onInternalScroll],
   );
 
@@ -89,6 +96,7 @@ function VirtualTable<RecordType>(props: VirtualTableProps<RecordType>, ref: Rea
         internalHooks={INTERNAL_HOOKS}
         tailor
         ref={ref}
+        virtualScrollX={virtualScrollX}
       />
     </StaticContext.Provider>
   );

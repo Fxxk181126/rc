@@ -34,7 +34,8 @@
     "prepublishOnly": "npm run compile && np --no-cleanup --yolo --no-publish",
     "lint": "eslint src/ --ext .tsx,.ts",
     "test": "rc-test",
-    "now-build": "npm run build"
+    "now-build": "npm run build",
+    "watch": "nodemon --ignore es/ --ignore node_modules/ --watch src/ -C -e ts,tsx,scss,less --debug -x \"npm run compile\""
   },
   "peerDependencies": {
     "react": ">=16.9.0",
