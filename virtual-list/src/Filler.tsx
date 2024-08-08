@@ -26,7 +26,7 @@ interface FillerProps {
 
   columnWidthList?: number[];
 
-  leftIndex: number;
+  virtualColumInfo?: { leftIndex: number; rightIndex: number; totalFixedWidth: number }
 }
 
 /**
@@ -45,12 +45,12 @@ const Filler = React.forwardRef(
       rtl,
       extra,
       columnWidthList = [],
-      leftIndex
+      virtualColumInfo,
     }: FillerProps,
     ref: React.Ref<HTMLDivElement>,
   ) => {
     let outerStyle: React.CSSProperties = {};
-
+    const { leftIndex, totalFixedWidth } = virtualColumInfo;
     let innerStyle: React.CSSProperties = {
       display: 'flex',
       flexDirection: 'column',
@@ -66,8 +66,8 @@ const Filler = React.forwardRef(
 
       innerStyle = {
         ...innerStyle,
-        transform: `translate(${-offsetX + (leftIndex - 1 >= 0 ? columnWidthList[leftIndex - 1] : 0)}px, ${offsetY}px)`,// 需要增加前面删除的列宽
-        // [rtl ? 'marginRight' : 'marginLeft']: -offsetX, 
+        transform: `translateY(${offsetY}px)`,// 需要增加前面删除的列宽
+        [rtl ? 'marginRight' : 'marginLeft']: -offsetX + (leftIndex - 1 >= 0 ? columnWidthList[leftIndex - 1] : 0), 
         position: 'absolute',
         left: 0,
         right: 0,

@@ -50,7 +50,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
 
   // =========================== Ref ============================
   const listRef = React.useRef<ListRef>();
-  const [virtualColumInfo, setVirtualColumInfo] = React.useState<{ leftIndex: number; rightIndex: number; }>({ leftIndex: 0, rightIndex: undefined });
+  const [virtualColumInfo, setVirtualColumInfo] = React.useState<{ leftIndex: number; rightIndex: number; totalFixedWidth: number }>({ leftIndex: 0, rightIndex: undefined, totalFixedWidth: 0 });
 
   // =========================== Data ===========================
   const flattenData = useFlattenRecords(data, childrenColumnName, expandedKeys, getRowKey);
@@ -119,6 +119,20 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
     }, []);
   }, [flattenColumns]);
 
+  const fixColMap = React.useMemo(() => {
+    return flattenColumns.reduce((acc, cur, index) => {
+      if (cur.fixed == 'left') {
+        acc.leftFixCols.unshift(index);
+        acc.leftFix[index] = cur;
+      } else if (cur.fixed == 'right') {
+        acc.rightFixCols.push(index);
+        acc.rightFix[index] = cur;
+      }
+  
+      return acc;
+    }, { leftFix: {}, rightFix: {}, leftFixCols: [], rightFixCols: [] });
+  }, [flattenColumns]);
+
   const getColSpan = (column: ColumnType<any>, index: number): number => {
     const record = flattenData[index]?.record;
     const { onCell } = column;
@@ -147,9 +161,18 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
       leftIndexList.push(offsetLeftIndexByColSpan(leftIndex, index));
     }
 
+    let totalFixedWidth = 0;
+    fixColMap.leftFixCols.forEach(key => {
+      if (Number(key) < leftIndex) {
+        totalFixedWidth += columnWidthList[key];
+      }
+    });
+
+    leftIndex = Math.min(...leftIndexList);
     setVirtualColumInfo({
-      leftIndex: Math.min(...leftIndexList),
-      rightIndex
+      leftIndex: Math.min(Math.max(leftIndex - 0, 0), leftIndex),
+      rightIndex: rightIndex,
+      totalFixedWidth
     })
   }
   

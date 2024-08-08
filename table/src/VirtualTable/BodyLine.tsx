@@ -90,6 +90,35 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
     rowStyle.pointerEvents = 'none';
   }
 
+  const fixColMap = React.useMemo(() => {
+    return flattenColumns.reduce((acc, cur, index) => {
+      if (cur.fixed == 'left') {
+        acc.leftFixCols.unshift(index);
+        acc.leftFix[index] = cur;
+      } else if (cur.fixed == 'right') {
+        acc.rightFixCols.push(index);
+        acc.rightFix[index] = cur;
+      }
+  
+      return acc;
+    }, { leftFix: {}, rightFix: {}, leftFixCols: [], rightFixCols: [] });
+  }, [flattenColumns]);
+
+  const cols = flattenColumns.slice(leftIndex, rightIndex || undefined);
+  let offsetCount = 0;
+  fixColMap.leftFixCols.forEach(key => {
+    if (Number(key) < leftIndex) {
+      cols.unshift(fixColMap.leftFix[key]);
+      offsetCount++;
+    }
+  });
+  fixColMap.rightFixCols.forEach(key => {
+    if (Number(key) >= rightIndex || Number(key) < leftIndex) {
+      cols.push(fixColMap.rightFix[key]);
+    }
+  });
+  console.log("🚀 ~ BodyLine ~ list:", flattenColumns, cols, fixColMap)
+
   const rowNode = (
     <RowComponent
       {...rowProps}
@@ -101,14 +130,14 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
       })}
       style={{ ...rowStyle, ...rowProps?.style }}
     >
-      {flattenColumns.slice(leftIndex, rightIndex).map((column, colIndex) => {
+      {cols.map((column, colIndex) => {
         return (
           <VirtualCell
-            key={colIndex + leftIndex}
+            key={colIndex + leftIndex - offsetCount}
             component={cellComponent}
             rowInfo={rowInfo}
             column={column}
-            colIndex={colIndex + leftIndex}
+            colIndex={colIndex + leftIndex - offsetCount}
             indent={indent}
             index={index}
             renderIndex={renderIndex}
