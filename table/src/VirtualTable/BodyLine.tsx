@@ -19,11 +19,13 @@ export interface BodyLineProps<RecordType = any> {
   extra?: boolean;
   offsetX?: number;
   getHeight?: (rowSpan: number) => number;
+  virtualColumInfo?: { leftIndex: number; rightIndex: number};
 }
 
 const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) => {
-  const { data, index, className, rowKey, style, extra, getHeight, offsetX, ...restProps } = props;
+  const { data, index, className, rowKey, style, extra, getHeight, offsetX, virtualColumInfo, ...restProps } = props;
   const { record, indent, index: renderIndex } = data;
+  const { leftIndex, rightIndex } = virtualColumInfo;
 
   const { scrollX, flattenColumns, prefixCls, fixColumn, componentWidth } = useContext(
     TableContext,
@@ -87,21 +89,6 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
     rowStyle.position = 'absolute';
     rowStyle.pointerEvents = 'none';
   }
-
-  const columnWidthList: number[] = React.useMemo(() => {
-    let curColumnTotal = 0;
-    return flattenColumns.reduce((acc, column) => {
-      curColumnTotal += (column.width || 0 ) as number;
-      acc.push(curColumnTotal);
-
-      return acc;
-    }, [])
-  }, [flattenColumns]);
-
-  const rightIndex = columnWidthList.findIndex(width => width >= (offsetX || 0)  + componentWidth) + 1 || undefined;
-  const maxOffsetX = Math.max(columnWidthList[columnWidthList.length - 1] - componentWidth, 0);
-  let leftIndex = columnWidthList.findIndex(width => width >= Math.min(offsetX, maxOffsetX));
-  leftIndex = leftIndex >= 0 ? leftIndex : 0;
 
   const rowNode = (
     <RowComponent

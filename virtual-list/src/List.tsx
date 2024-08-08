@@ -73,7 +73,7 @@ export interface ListProps<T> extends Omit<React.HTMLAttributes<any>, 'children'
   };
 
   onScroll?: React.UIEventHandler<HTMLElement>;
-  onScrollX?: (n: number) => void;
+  onScrollX?: (n: number, start: number, end: number) => void;
   /**
    * Given the virtual offset value.
    * It's the logic offset from start position.
@@ -89,6 +89,7 @@ export interface ListProps<T> extends Omit<React.HTMLAttributes<any>, 'children'
   /** Render extra content into Filler */
   extraRender?: (info: ExtraRenderInfo) => React.ReactNode;
   columnWidthList?: number[];
+  virtualColumInfo?: { leftIndex: number; rightIndex: number };
 }
 
 export function RawList<T>(props: ListProps<T>, ref: React.Ref<ListRef>) {
@@ -114,6 +115,7 @@ export function RawList<T>(props: ListProps<T>, ref: React.Ref<ListRef>) {
     extraRender,
     styles,
     columnWidthList,
+    virtualColumInfo,
     ...restProps
   } = props;
 
@@ -347,8 +349,8 @@ export function RawList<T>(props: ListProps<T>, ref: React.Ref<ListRef>) {
   });
 
   React.useEffect(() => {
-    onScrollX(offsetLeft);
-  }, [offsetLeft])
+    onScrollX(offsetLeft, start, end);
+  }, [offsetLeft, start, end])
 
   function onScrollBar(newScrollOffset: number, horizontal?: boolean) {
     const newOffset = newScrollOffset;
@@ -586,6 +588,7 @@ export function RawList<T>(props: ListProps<T>, ref: React.Ref<ListRef>) {
             rtl={isRTL}
             extra={extraContent}
             columnWidthList={columnWidthList}
+            leftIndex={virtualColumInfo?.leftIndex}
           >
             {listChildren}
           </Filler>
