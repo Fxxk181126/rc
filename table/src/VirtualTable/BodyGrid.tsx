@@ -118,7 +118,8 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
   }, [flattenColumns]);
   const extraRender: ListProps<any>['extraRender'] = info => {
     const { start, end, getSize, offsetY, offsetX } = info;
-
+    var leftIndex = columnWidthList.findIndex(width => width >= offsetX);
+    leftIndex = leftIndex >= 0 ? leftIndex : 0;
     // Do nothing if no data
     if (end < 0) {
       return null;
@@ -129,7 +130,6 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
       // rowSpan is 0
       column => getRowSpan(column, start) === 0,
     );
-
     let startIndex = start;
     for (let i = start; i >= 0; i -= 1) {
       firstRowSpanColumns = firstRowSpanColumns.filter(column => getRowSpan(column, i) === 0);
@@ -166,16 +166,13 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
       if (!item) {
         continue;
       }
-
       if (flattenColumns.some(column => getRowSpan(column, i) > 1)) {
         spanLines.push(i);
       }
     }
-
     // Patch extra line on the page
     const nodes: React.ReactElement[] = spanLines.map(index => {
       const item = flattenData[index];
-
       const rowKey = getRowKey(item.record, index);
 
       const getHeight = (rowSpan: number) => {
@@ -187,8 +184,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
       };
 
       const sizeInfo = getSize(rowKey);
-      let leftIndex = columnWidthList.findIndex(width => width >= offsetX) - 1;
-      console.log("🚀 ~ Grid ~ leftIndex:222", index, leftIndex, offsetX, columnWidthList[leftIndex])
+
       return (
         <BodyLine
           key={index}
@@ -197,8 +193,8 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
           index={index}
           style={{
             top: -offsetY + sizeInfo.top,
-            // left: -(leftIndex >= 0 ? columnWidthList[leftIndex] : 0)
           }}
+          offsetX={offsetX}
           extra
           getHeight={getHeight}
         />

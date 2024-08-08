@@ -98,9 +98,11 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
     }, [])
   }, [flattenColumns]);
 
-  var leftIndex = columnWidthList.findIndex(width => width >= offsetX);
-  var rightIndex = columnWidthList.findIndex(width => width >= (offsetX || 0)  + componentWidth) + 1;
+  const rightIndex = columnWidthList.findIndex(width => width >= (offsetX || 0)  + componentWidth) + 1 || undefined;
+  const maxOffsetX = Math.max(columnWidthList[columnWidthList.length - 1] - componentWidth, 0);
+  let leftIndex = columnWidthList.findIndex(width => width >= Math.min(offsetX, maxOffsetX));
   leftIndex = leftIndex >= 0 ? leftIndex : 0;
+
   const rowNode = (
     <RowComponent
       {...rowProps}
