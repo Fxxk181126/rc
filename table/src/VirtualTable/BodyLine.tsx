@@ -104,21 +104,22 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
     }, { leftFix: {}, rightFix: {}, leftFixCols: [], rightFixCols: [] });
   }, [flattenColumns]);
 
-  const cols = flattenColumns.slice(leftIndex, rightIndex || undefined);
+  const cols: any[] = flattenColumns.slice(leftIndex, rightIndex || undefined);
   let offsetCount = 0;
   fixColMap.leftFixCols.forEach(key => {
     if (Number(key) < leftIndex) {
+      fixColMap.leftFix[key].isFixed = true;
+      fixColMap.leftFix[key].fixedKey = key;
       cols.unshift(fixColMap.leftFix[key]);
       offsetCount++;
     }
   });
+
   fixColMap.rightFixCols.forEach(key => {
     if (Number(key) >= rightIndex || Number(key) < leftIndex) {
       cols.push(fixColMap.rightFix[key]);
     }
   });
-  console.log("🚀 ~ BodyLine ~ list:", flattenColumns, cols, fixColMap)
-
   const rowNode = (
     <RowComponent
       {...rowProps}
@@ -133,11 +134,11 @@ const BodyLine = React.forwardRef<HTMLDivElement, BodyLineProps>((props, ref) =>
       {cols.map((column, colIndex) => {
         return (
           <VirtualCell
-            key={colIndex + leftIndex - offsetCount}
+            key={colIndex + (column?.isFixed ? 0 : leftIndex)}
             component={cellComponent}
             rowInfo={rowInfo}
             column={column}
-            colIndex={colIndex + leftIndex - offsetCount}
+            colIndex={colIndex + (column?.isFixed ? 0 : leftIndex)}
             indent={indent}
             index={index}
             renderIndex={renderIndex}

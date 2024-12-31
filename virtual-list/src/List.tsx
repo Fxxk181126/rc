@@ -89,7 +89,7 @@ export interface ListProps<T> extends Omit<React.HTMLAttributes<any>, 'children'
   /** Render extra content into Filler */
   extraRender?: (info: ExtraRenderInfo) => React.ReactNode;
   columnWidthList?: number[];
-  virtualColumInfo?: { leftIndex: number; rightIndex: number; totalFixedWidth: number };
+  virtualColumInfo?: { leftIndex: number; rightIndex: number; totalFixedWidth: number; fixedCount: number };
 }
 
 export function RawList<T>(props: ListProps<T>, ref: React.Ref<ListRef>) {

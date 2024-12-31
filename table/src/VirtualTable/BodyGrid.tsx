@@ -50,7 +50,7 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
 
   // =========================== Ref ============================
   const listRef = React.useRef<ListRef>();
-  const [virtualColumInfo, setVirtualColumInfo] = React.useState<{ leftIndex: number; rightIndex: number; totalFixedWidth: number }>({ leftIndex: 0, rightIndex: undefined, totalFixedWidth: 0 });
+  const [virtualColumInfo, setVirtualColumInfo] = React.useState<{ leftIndex: number; rightIndex: number; totalFixedWidth: number; fixedCount: number }>({ leftIndex: 0, rightIndex: undefined, totalFixedWidth: 0, fixedCount: 0 });
 
   // =========================== Data ===========================
   const flattenData = useFlattenRecords(data, childrenColumnName, expandedKeys, getRowKey);
@@ -118,15 +118,14 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
       return acc;
     }, []);
   }, [flattenColumns]);
-
   const fixColMap = React.useMemo(() => {
     return flattenColumns.reduce((acc, cur, index) => {
       if (cur.fixed == 'left') {
         acc.leftFixCols.unshift(index);
-        acc.leftFix[index] = cur;
+        acc.leftFix[index] = cur?.width || 0;
       } else if (cur.fixed == 'right') {
         acc.rightFixCols.push(index);
-        acc.rightFix[index] = cur;
+        acc.rightFix[index] = cur?.width || 0;
       }
   
       return acc;
@@ -160,19 +159,22 @@ const Grid = React.forwardRef<GridRef, GridProps>((props, ref) => {
     for (let index = start; index <= end; index++) {
       leftIndexList.push(offsetLeftIndexByColSpan(leftIndex, index));
     }
+    leftIndex = Math.min(...leftIndexList);
 
     let totalFixedWidth = 0;
+    let fixedCount = 0;
     fixColMap.leftFixCols.forEach(key => {
-      if (Number(key) < leftIndex) {
-        totalFixedWidth += columnWidthList[key];
+      if (Number(key) < (leftIndex)) {
+        totalFixedWidth += fixColMap.leftFix[key];
+        fixedCount++;
       }
     });
 
-    leftIndex = Math.min(...leftIndexList);
     setVirtualColumInfo({
       leftIndex: Math.min(Math.max(leftIndex - 0, 0), leftIndex),
       rightIndex: rightIndex,
-      totalFixedWidth
+      totalFixedWidth,
+      fixedCount
     })
   }
   

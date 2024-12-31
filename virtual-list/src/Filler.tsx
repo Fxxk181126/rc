@@ -26,7 +26,7 @@ interface FillerProps {
 
   columnWidthList?: number[];
 
-  virtualColumInfo?: { leftIndex: number; rightIndex: number; totalFixedWidth: number }
+  virtualColumInfo?: { leftIndex: number; rightIndex: number; totalFixedWidth: number; fixedCount: number }
 }
 
 /**
@@ -50,12 +50,14 @@ const Filler = React.forwardRef(
     ref: React.Ref<HTMLDivElement>,
   ) => {
     let outerStyle: React.CSSProperties = {};
-    const { leftIndex, totalFixedWidth } = virtualColumInfo;
+    let { leftIndex, totalFixedWidth, fixedCount } = virtualColumInfo;
     let innerStyle: React.CSSProperties = {
       display: 'flex',
       flexDirection: 'column',
     };
 
+    const hiddenColWidth = leftIndex - 1 >= 0 ? columnWidthList[leftIndex - 1] : 0;
+    console.log("🚀 ~ columnWidthList:", offsetX, columnWidthList)
     if (offsetY !== undefined) {
       // Not set `width` since this will break `sticky: right`
       outerStyle = {
@@ -67,7 +69,7 @@ const Filler = React.forwardRef(
       innerStyle = {
         ...innerStyle,
         transform: `translateY(${offsetY}px)`,// 需要增加前面删除的列宽
-        [rtl ? 'marginRight' : 'marginLeft']: -offsetX + (leftIndex - 1 >= 0 ? columnWidthList[leftIndex - 1] : 0), 
+        [rtl ? 'marginRight' : 'marginLeft']: -offsetX + hiddenColWidth, 
         position: 'absolute',
         left: 0,
         right: 0,

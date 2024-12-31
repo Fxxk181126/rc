@@ -64,6 +64,11 @@ function VirtualCell<RecordType = any>(props: VirtualCellProps<RecordType>) {
     index,
   );
 
+
+  if (index == 9999) {
+    console.log('🚀 ~ additionalCellProps: ', additionalCellProps);
+  }
+
   const { style: cellStyle, colSpan = 1, rowSpan = 1 } = additionalCellProps;
 
   // ========================= ColWidth =========================
